@@ -4,7 +4,8 @@ import { socket } from "./socket";
 export default function Leaderboard(){
   const [players,setPlayers]=useState([]);
   useEffect(()=>{
-    fetch("http://localhost:3001/api/leaderboard")
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:3001";
+    fetch(`${backendUrl}/api/leaderboard`)
       .then(res=>{
         if(!res.ok) throw new Error("Failed");
         return res.json();

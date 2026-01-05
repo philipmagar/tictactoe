@@ -27,7 +27,8 @@ export default function Auth({ onLogin }) {
     if (!validateInput(regUsername, regPassword)) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/api/auth/register`, {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${backendUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: regUsername, password: regPassword })
@@ -51,7 +52,8 @@ export default function Auth({ onLogin }) {
     if (!validateInput(loginUsername, loginPassword)) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/api/auth/login`, {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${backendUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: loginUsername, password: loginPassword })
