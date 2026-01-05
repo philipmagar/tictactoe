@@ -12,6 +12,7 @@ export default function Auth({ onLogin }) {
   const [loginPassword, setLoginPassword] = useState('');
   
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateInput = (username, password) => {
     if (!username.trim() || !password.trim()) {
@@ -25,6 +26,7 @@ export default function Auth({ onLogin }) {
     e.preventDefault();
     setError('');
     if (!validateInput(regUsername, regPassword)) return;
+    setIsLoading(true);
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
@@ -43,6 +45,8 @@ export default function Auth({ onLogin }) {
       setRegPassword('');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -50,6 +54,7 @@ export default function Auth({ onLogin }) {
     e.preventDefault();
     setError('');
     if (!validateInput(loginUsername, loginPassword)) return;
+    setIsLoading(true);
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
@@ -68,6 +73,8 @@ export default function Auth({ onLogin }) {
       onLogin(data);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -130,9 +137,12 @@ export default function Auth({ onLogin }) {
               style={inputStyle}
             />
             {error && <p className="error-text" style={{ color: '#cf6679', marginTop: '10px' }}>{error}</p>}
-            <button type="submit" style={btnStyle}>SIGN UP</button>
+            {isLoading && <p style={{ color: '#bb86fc', fontSize: '0.8rem', marginTop: '10px' }}>Waking up server... This may take up to 60 seconds.</p>}
+            <button type="submit" style={{ ...btnStyle, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
+              {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
+            </button>
             <p style={{ color: '#a0a0a0', marginTop: '20px', fontSize: '0.9rem' }}>
-              Already have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setIsRegister(false); setError(''); }}>Sign In</span>
+              Already have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { if(!isLoading) { setIsRegister(false); setError(''); } }}>Sign In</span>
             </p>
           </form>
         ) : (
@@ -153,9 +163,12 @@ export default function Auth({ onLogin }) {
               style={inputStyle}
             />
             {error && <p className="error-text" style={{ color: '#cf6679', marginTop: '10px' }}>{error}</p>}
-            <button type="submit" style={btnStyle}>SIGN IN</button>
+            {isLoading && <p style={{ color: '#bb86fc', fontSize: '0.8rem', marginTop: '10px' }}>Waking up server... This may take up to 60 seconds.</p>}
+            <button type="submit" style={{ ...btnStyle, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
+              {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+            </button>
             <p style={{ color: '#a0a0a0', marginTop: '20px', fontSize: '0.9rem' }}>
-              Don't have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setIsRegister(true); setError(''); }}>Sign Up</span>
+              Don't have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { if(!isLoading) { setIsRegister(true); setError(''); } }}>Sign Up</span>
             </p>
           </form>
         )}
