@@ -45,19 +45,51 @@ io.use((socket, next) => {
 const queue = [];
 
 io.on("connection", socket => {
-  socket.on("findMatch", async () => {
-    const { rows } = await pool.query("SELECT elo, username FROM users WHERE id=$1",[socket.userId]);
-    const playerData = { socketId: socket.id, userId: socket.userId, elo: rows[0].elo, username: rows[0].username };
+  console.log(`Socket connected: ${socket.id}, UserID: ${socket.userId}`);
+  
+  socket.on("disconnect", () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+    const idx = queue.findIndex(p => p.socketId === socket.id);
+    if(idx !== -1) {
+        queue.splice(idx, 1);
+        console.log("Removed from queue");
+    }
+  });
 
-    const opponentIndex = queue.findIndex(p => Math.abs(p.elo-playerData.elo)<=100);
-    if(opponentIndex!==-1){
-      const opponent = queue.splice(opponentIndex,1)[0];
-      startGame(playerData, opponent);
-    }else queue.push(playerData);
+  socket.on("findMatch", async () => {
+    console.log(`Find Match requested by ${socket.id}`);
+    // Check if already in queue to prevent duplicates
+    if(queue.find(p => p.socketId === socket.id)) return;
+
+    try {
+        const { rows } = await pool.query("SELECT elo, username FROM users WHERE id=$1",[socket.userId]);
+        if (rows.length === 0) return;
+        
+        const playerData = { socketId: socket.id, userId: socket.userId, elo: rows[0].elo, username: rows[0].username };
+        console.log(`Player ${playerData.username} (${playerData.elo}) searching... Queue size: ${queue.length}`);
+
+        // Prevent playing against yourself in dev (if using same user in 2 tabs)
+        // const opponentIndex = queue.findIndex(p => Math.abs(p.elo-playerData.elo)<=100 && p.userId !== playerData.userId);
+        
+        // For testing purposes, allow playing against yourself if using different sockets
+        const opponentIndex = queue.findIndex(p => Math.abs(p.elo-playerData.elo)<=100 && p.socketId !== playerData.socketId);
+
+        if(opponentIndex!==-1){
+          const opponent = queue.splice(opponentIndex,1)[0];
+          console.log(`Match found: ${playerData.username} vs ${opponent.username}`);
+          startGame(playerData, opponent);
+        }else {
+            queue.push(playerData);
+            console.log("Added to queue");
+        }
+    } catch (err) {
+        console.error("Matchmaking error:", err);
+    }
   });
 
   async function startGame(p1,p2){
-    const { rows } = await pool.query("INSERT INTO games (status,current_turn,ranked) VALUES ('active','X',true) RETURNING id");
+    try {
+        const { rows } = await pool.query("INSERT INTO games (status,current_turn,ranked) VALUES ('active','X',true) RETURNING id");
     const gameId = rows[0].id;
     await pool.query("INSERT INTO game_players (game_id,user_id,symbol) VALUES ($1,$2,'X')", [gameId,p1.userId]);
     await pool.query("INSERT INTO game_players (game_id,user_id,symbol) VALUES ($1,$2,'O')", [gameId,p2.userId]);
@@ -69,6 +101,9 @@ io.on("connection", socket => {
     if(s2) s2.join(gameId.toString());
 
     [p1,p2].forEach(p=>io.to(p.socketId).emit("startGame",{ gameId, player: p===p1?'X':'O' }));
+    } catch (err) {
+      console.error("StartGame error:", err);
+    }
   }
 
   socket.on("move", async ({ gameId, position }) => {
@@ -83,15 +118,20 @@ io.on("connection", socket => {
     await pool.query("INSERT INTO moves (game_id,player,position) VALUES ($1,$2,$3)", [gameId, playerSymbol, position]);
     board[position] = playerSymbol;
 
+    // Always emit the update first so clients see the move
+    io.to(gameId.toString()).emit("update",{position,player:playerSymbol});
+
     const result = checkWinner(board);
     if(result){
       await pool.query("UPDATE games SET status='finished', winner=$1 WHERE id=$2",[result==='draw'?null:result, gameId]);
       if(gameRes.rows[0].ranked) await updateElo(gameId, result);
-      io.to(gameId.toString()).emit("gameOver", result);
+      // Emit gameOver after a small delay to ensure update is processed first
+      setTimeout(() => {
+        io.to(gameId.toString()).emit("gameOver", result);
+      }, 100);
     }else{
       const nextTurn = playerSymbol==='X'?'O':'X';
       await pool.query("UPDATE games SET current_turn=$1 WHERE id=$2",[nextTurn,gameId]);
-      io.to(gameId.toString()).emit("update",{position,player:playerSymbol});
     }
   });
 
@@ -110,13 +150,16 @@ io.on("connection", socket => {
     const newEloO = calcElo(playerO.elo, expectedScore(playerO.elo, playerX.elo), scoreO);
 
     await pool.query(`
-      UPDATE users SET elo = CASE
-        WHEN id=$1 THEN $2
-        WHEN id=$3 THEN $4 END,
-      games_played = games_played+1,
-      wins = wins+$5,
-      losses = losses+$6,
-      draws = draws+$7
+      UPDATE users SET 
+        elo = CASE
+          WHEN id=$1 THEN $2
+          WHEN id=$3 THEN $4
+          ELSE elo
+        END,
+        games_played = games_played+1,
+        wins = wins+$5,
+        losses = losses+$6,
+        draws = draws+$7
       WHERE id IN ($1,$3)
     `,[playerX.id,newEloX,playerO.id,newEloO,scoreX===1?1:0,scoreX===0?1:0,scoreX===0.5?1:0]);
 

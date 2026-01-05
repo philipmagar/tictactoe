@@ -4,7 +4,13 @@ import { socket } from "./socket";
 export default function Leaderboard(){
   const [players,setPlayers]=useState([]);
   useEffect(()=>{
-    fetch("http://localhost:3001/api/leaderboard").then(res=>res.json()).then(setPlayers);
+    fetch("http://localhost:3001/api/leaderboard")
+      .then(res=>{
+        if(!res.ok) throw new Error("Failed");
+        return res.json();
+      })
+      .then(setPlayers)
+      .catch(err=>console.error("Leaderboard fetch error:", err));
     socket.on("leaderboardUpdate", setPlayers);
     return ()=>socket.off("leaderboardUpdate");
   },[]);
