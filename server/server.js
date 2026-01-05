@@ -15,6 +15,9 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 
+// Add health check route for verification
+app.get("/", (req, res) => res.send("Tic Tac Toe Server is Running!"));
+
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
