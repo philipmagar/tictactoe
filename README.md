@@ -48,14 +48,7 @@ npm install
 Create a `.env` file in the `server` directory with the following variables:
 
 ```env
-# Example .env configuration
-DB_USER=your_postgres_user
-DB_PASSWORD=your_postgres_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=tictactoe_db
-JWT_SECRET=your_super_secret_jwt_key
-```
+
 
 Start the server:
 
