@@ -1,9 +1,4 @@
 # 🎮 Tic-Tac-Toe Online: The Ultimate Neon Challenge
-
-![Tic-Tac-Toe Hero Banner](https://img.shields.io/badge/Status-Live-brightgreen)
-![Tech-Stack](https://img.shields.io/badge/Stack-PERN-blue)
-![License-MIT](https://img.shields.io/badge/License-MIT-orange)
-
 A high-performance, real-time multiplayer Tic-Tac-Toe experience. Built with the **PERN** stack (PostgreSQL, Express, React, Node.js), this application features a sleek glassmorphic UI, competitive matchmaking, and an Elo-based ranking system.
 
 ---
