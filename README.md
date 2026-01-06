@@ -1,81 +1,117 @@
-# Tic-Tac-Toe Online
+# 🎮 Tic-Tac-Toe Online: The Ultimate Neon Challenge
 
-A real-time multiplayer Tic-Tac-Toe game built with the PERN stack (PostgreSQL, Express, React, Node.js). This application features live matchmaking, an Elo rating system, and a global leaderboard.
+![Tic-Tac-Toe Hero Banner](https://img.shields.io/badge/Status-Live-brightgreen)
+![Tech-Stack](https://img.shields.io/badge/Stack-PERN-blue)
+![License-MIT](https://img.shields.io/badge/License-MIT-orange)
 
-## Features
+A high-performance, real-time multiplayer Tic-Tac-Toe experience. Built with the **PERN** stack (PostgreSQL, Express, React, Node.js), this application features a sleek glassmorphic UI, competitive matchmaking, and an Elo-based ranking system.
 
-- **Real-Time Gameplay**: Play against other users instantly using Socket.io.
-- **Matchmaking System**: Automatically finds opponents with a similar Elo rating (+/- 100).
-- **Elo Rating**: Competitive ranking system that updates after every ranked match.
-- **Leaderboard**: Live view of the top 10 players by Elo.
-- **User Authentication**: Secure signup and login functionality.
-- **Game History**: Detailed tracking of games, moves, and outcomes in PostgreSQL.
+---
 
-## Tech Stack
+## ✨ Features
 
-- **Frontend**: React, Socket.io Client
-- **Backend**: Node.js, Express, Socket.io
-- **Database**: PostgreSQL
-- **Security**: JWT (JSON Web Tokens), bcrypt (Password Hashing)
+- 🌐 **Real-Time Multiplayer**: Seamless gameplay powered by **Socket.io**.
+- 🏆 **Elo Rating System**: Competitive ranking that adjusts based on your performance.
+- 📊 **Live Leaderboard**: Real-time updates for the top 10 global players.
+- 🤝 **Smart Matchmaking**: Finds opponents within ±100 Elo range automatically.
+- 🔐 **Secure Authentication**: JWT-based auth with encrypted password storage.
+- 📱 **Responsive Design**: Optimized for both Desktop and Mobile browsers.
+- ✨ **Modern UI**: Glassmorphism, smooth transitions, and a premium neon aesthetic.
 
-## Prerequisites
+---
 
-- Node.js (v14 or higher)
-- PostgreSQL
+## 🚀 Tech Stack
 
-## Setup & Installation
+### Frontend
+- **React.js**: Functional components with Hooks.
+- **Socket.io-client**: For bi-directional event-based communication.
+- **Vanilla CSS**: Custom design system with glassmorphic elements.
+- **Vercel**: Optimized frontend deployment.
 
-### 1. Database Setup
+### Backend
+- **Node.js & Express**: Scalable REST APIs and Socket management.
+- **Socket.io**: Real-time game state synchronization.
+- **PostgreSQL**: Robust relational data storage.
+- **JWT & Bcrypt**: Secure session management and hashing.
+- **Render**: Backend and Database hosting.
 
-Create a PostgreSQL database and run the schema script found in `server/database.sql`.
+---
 
-```sql
-psql -U postgres
-CREATE DATABASE tictactoe_db;
-\c tictactoe_db
-\i server/database.sql
+## 🛠️ Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/philipmagar/tictactoe.git
+cd tictactoe
 ```
 
-### 2. server Setup
+### 2. Database Configuration
+Ensure you have **PostgreSQL** installed. Run the schema migrations:
+```bash
+cd server
+# If using psql CLI:
+psql -U postgres -f database.sql
+```
 
-Navigate to the server directory and install dependencies:
-
+### 3. Server Setup
 ```bash
 cd server
 npm install
 ```
-
-Create a `.env` file in the `server` directory with the following variables:
-
+Create a `.env` file in the `/server` directory:
 ```env
-
-
+DATABASE_URL=postgres://user:password@localhost:5432/tictactoe
+JWT_SECRET=your_super_secret_key
+PORT=3001
+```
 Start the server:
-
 ```bash
 npm start
-# Server runs on http://localhost:3001
 ```
 
-### 3. Client Setup
-
-Navigate to the client directory and install dependencies:
-
+### 4. Client Setup
 ```bash
-cd client
+cd ../client
 npm install
 ```
-
-Start the React application:
-
+Start the development server:
 ```bash
 npm start
-# Client runs on http://localhost:3000
 ```
+The app will be running at `http://localhost:3000`.
 
-## How to Play
+---
 
-1.  **Register/Login**: Create an account to start tracking your score.
-2.  **Find Match**: Click the "Find Match" or "Play" button to enter the matchmaking queue.
-3.  **Play**: You will be paired with an opponent close to your rank. Win games to increase your Elo!
-4.  **Leaderboard**: Check the leaderboard to see where you stand among the top players.
+## 🎮 How to Play
+
+1. **Sign Up**: Create your unique username and secure password.
+2. **Find Match**: Click the **"Find Match"** button. The system will pair you with a compatible opponent.
+3. **The Game**: 'X' goes first. The goal is to get three of your symbols in a row (horizontal, vertical, or diagonal).
+4. **Rank Up**: Winning matches increases your Elo. Check the **Leaderboard** to see your standing!
+
+---
+
+## 🎨 UI Showcase
+
+*(Add your screenshots here!)*
+
+> **Note**: This project uses a custom glassmorphic design system for a premium feel.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
