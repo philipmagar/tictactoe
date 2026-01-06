@@ -30,11 +30,17 @@ export default function Auth({ onLogin }) {
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 70000); // 70s timeout
+
       const res = await fetch(`${backendUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: regUsername, password: regPassword })
+        body: JSON.stringify({ username: regUsername, password: regPassword }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || res.statusText);
@@ -44,7 +50,13 @@ export default function Auth({ onLogin }) {
       setRegUsername('');
       setRegPassword('');
     } catch (err) {
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. The server is taking too long to wake up. Please try again.');
+      } else if (err.message === 'Failed to fetch') {
+        setError('Connection failed. Typical for server waking up. Please try again soon.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -58,11 +70,18 @@ export default function Auth({ onLogin }) {
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      console.log('Attempting to connect to backend at:', backendUrl);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 70000); // 70s timeout
+
       const res = await fetch(`${backendUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: loginUsername, password: loginPassword })
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || res.statusText);
@@ -72,7 +91,13 @@ export default function Auth({ onLogin }) {
       localStorage.setItem('username', data.username);
       onLogin(data);
     } catch (err) {
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. The server is taking too long to wake up. Please try again.');
+      } else if (err.message === 'Failed to fetch') {
+        setError('Connection failed. Typical for server waking up. Please try again soon.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -136,13 +161,17 @@ export default function Auth({ onLogin }) {
               onChange={e => setRegPassword(e.target.value)} 
               style={inputStyle}
             />
+            {isLoading && (
+              <div style={{ color: '#03dac6', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                ⏳ Server waking up, please wait (may take up to 60s)...
+              </div>
+            )}
             {error && <p className="error-text" style={{ color: '#cf6679', marginTop: '10px' }}>{error}</p>}
-            {isLoading && <p style={{ color: '#bb86fc', fontSize: '0.8rem', marginTop: '10px' }}>Waking up server... This may take up to 60 seconds.</p>}
-            <button type="submit" style={{ ...btnStyle, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
-              {isLoading ? 'SIGNING UP...' : 'SIGN UP'}
+            <button type="submit" style={{...btnStyle, opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer'}} disabled={isLoading}>
+              {isLoading ? 'PLEASE WAIT...' : 'SIGN UP'}
             </button>
             <p style={{ color: '#a0a0a0', marginTop: '20px', fontSize: '0.9rem' }}>
-              Already have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { if(!isLoading) { setIsRegister(false); setError(''); } }}>Sign In</span>
+              Already have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setIsRegister(false); setError(''); }}>Sign In</span>
             </p>
           </form>
         ) : (
@@ -162,13 +191,17 @@ export default function Auth({ onLogin }) {
               onChange={e => setLoginPassword(e.target.value)} 
               style={inputStyle}
             />
+            {isLoading && (
+              <div style={{ color: '#03dac6', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                ⏳ Server waking up, please wait (may take up to 60s)...
+              </div>
+            )}
             {error && <p className="error-text" style={{ color: '#cf6679', marginTop: '10px' }}>{error}</p>}
-            {isLoading && <p style={{ color: '#bb86fc', fontSize: '0.8rem', marginTop: '10px' }}>Waking up server... This may take up to 60 seconds.</p>}
-            <button type="submit" style={{ ...btnStyle, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
-              {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+            <button type="submit" style={{...btnStyle, opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer'}} disabled={isLoading}>
+              {isLoading ? 'PLEASE WAIT...' : 'SIGN IN'}
             </button>
             <p style={{ color: '#a0a0a0', marginTop: '20px', fontSize: '0.9rem' }}>
-              Don't have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { if(!isLoading) { setIsRegister(true); setError(''); } }}>Sign Up</span>
+              Don't have an account? <span style={{ color: '#bb86fc', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => { setIsRegister(true); setError(''); }}>Sign Up</span>
             </p>
           </form>
         )}
